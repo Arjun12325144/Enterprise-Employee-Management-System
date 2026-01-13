@@ -31,12 +31,22 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 // Controllers
 builder.Services.AddControllers();
 
-// CORS
+// CORS - Allow production and development origins
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5173")
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
+            ?? new[] { "http://localhost:3000", "http://localhost:3001", "http://localhost:5173" };
+        
+        // Add any CORS origins from environment variable
+        var envOrigins = Environment.GetEnvironmentVariable("CORS_ORIGINS");
+        if (!string.IsNullOrEmpty(envOrigins))
+        {
+            allowedOrigins = allowedOrigins.Concat(envOrigins.Split(',')).ToArray();
+        }
+        
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();

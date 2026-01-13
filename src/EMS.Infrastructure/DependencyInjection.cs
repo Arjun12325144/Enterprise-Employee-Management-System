@@ -15,11 +15,31 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Database - Using SQLite for easy setup (no SQL Server required)
+        // Database - Support PostgreSQL (Railway), SQLite (dev), or SQL Server
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+        
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(
-                configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        {
+            if (!string.IsNullOrEmpty(databaseUrl))
+            {
+                // Railway PostgreSQL - parse DATABASE_URL
+                var uri = new Uri(databaseUrl);
+                var userInfo = uri.UserInfo.Split(':');
+                var npgsqlConnectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+                options.UseNpgsql(npgsqlConnectionString);
+            }
+            else if (connectionString?.Contains("Host=") == true || connectionString?.Contains("Server=") == true && connectionString.Contains("Port="))
+            {
+                // PostgreSQL connection string
+                options.UseNpgsql(connectionString);
+            }
+            else
+            {
+                // SQLite for local development
+                options.UseSqlite(connectionString ?? "Data Source=EMS.db");
+            }
+        });
 
         // Repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
