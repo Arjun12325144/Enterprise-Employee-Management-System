@@ -1,0 +1,9 @@
+export { default as Login } from './Login';
+export { default as Dashboard } from './Dashboard';
+export { default as Employees } from './Employees';
+export { default as EmployeeDetails } from './EmployeeDetails';
+export { default as EmployeeForm } from './EmployeeForm';
+export { default as Departments } from './Departments';
+export { default as DepartmentForm } from './DepartmentForm';
+export { default as Settings } from './Settings';
+export { default as Notifications } from './Notifications';
