@@ -27,10 +27,16 @@ public static class DependencyInjection
             {
                 if (!string.IsNullOrEmpty(databaseUrl))
                 {
-                    // Parse DATABASE_URL (postgres://user:pass@host:port/database)
+                    // Parse DATABASE_URL (postgres://user:pass@host:port/database or postgres://user:pass@host/database)
                     var uri = new Uri(databaseUrl);
                     var userInfo = uri.UserInfo.Split(':');
-                    var npgsqlConnectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+                    var host = uri.Host;
+                    var port = uri.Port > 0 ? uri.Port : 5432; // Default PostgreSQL port
+                    var database = uri.AbsolutePath.TrimStart('/');
+                    var username = userInfo[0];
+                    var password = userInfo.Length > 1 ? userInfo[1] : "";
+                    
+                    var npgsqlConnectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
                     options.UseNpgsql(npgsqlConnectionString);
                 }
                 else if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("Host="))
