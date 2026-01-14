@@ -15,6 +15,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        // Configure Npgsql to use legacy timestamp behavior (handles DateTime without UTC)
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        
         // Database - Support PostgreSQL (Render/Railway), SQLite (dev), or SQL Server
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
