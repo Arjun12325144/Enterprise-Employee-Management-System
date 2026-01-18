@@ -36,17 +36,23 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
-            ?? new[] { "http://localhost:3000", "http://localhost:3001", "http://localhost:5173" };
+        var allowedOrigins = new List<string> 
+        { 
+            "http://localhost:3000", 
+            "http://localhost:3001", 
+            "http://localhost:5173",
+            "https://enterprise-employee-management-syst.vercel.app",
+            "https://enterprise-employee-management-syst-eta.vercel.app"
+        };
         
         // Add any CORS origins from environment variable
         var envOrigins = Environment.GetEnvironmentVariable("CORS_ORIGINS");
         if (!string.IsNullOrEmpty(envOrigins))
         {
-            allowedOrigins = allowedOrigins.Concat(envOrigins.Split(',')).ToArray();
+            allowedOrigins.AddRange(envOrigins.Split(','));
         }
         
-        policy.WithOrigins(allowedOrigins)
+        policy.WithOrigins(allowedOrigins.ToArray())
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
