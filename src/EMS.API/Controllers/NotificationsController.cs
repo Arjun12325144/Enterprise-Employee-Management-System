@@ -78,8 +78,13 @@ public class NotificationsController : ControllerBase
     [Authorize(Policy = "ManagerOrAdmin")]
     [ProducesResponseType(typeof(ApiResponse<NotificationDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Create([FromBody] CreateNotificationDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] CreateNotificationDto? dto, CancellationToken cancellationToken)
     {
+        if (dto == null)
+        {
+            return BadRequest(ApiResponse.FailureResponse("Invalid request body"));
+        }
+        
         if (string.IsNullOrWhiteSpace(dto.Title) || string.IsNullOrWhiteSpace(dto.Message))
         {
             return BadRequest(ApiResponse.FailureResponse("Title and message are required"));
